@@ -34,6 +34,7 @@
             this.btnReset = new System.Windows.Forms.Button();
             this.btnStart = new System.Windows.Forms.Button();
             this.lblTime = new System.Windows.Forms.Label();
+            this.timer5s = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // timer1s
@@ -76,6 +77,12 @@
             this.lblTime.Text = "00:00";
             this.lblTime.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // timer5s
+            // 
+            this.timer5s.Enabled = true;
+            this.timer5s.Interval = 5000;
+            this.timer5s.Tick += new System.EventHandler(this.timer5s_Tick);
+            // 
             // TimerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -105,6 +112,7 @@
         private System.Windows.Forms.Button btnReset;
         private System.Windows.Forms.Button btnStart;
         private System.Windows.Forms.Label lblTime;
+        private System.Windows.Forms.Timer timer5s;
     }
 }
 

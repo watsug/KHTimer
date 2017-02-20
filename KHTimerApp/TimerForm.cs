@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace KHTimerApp
@@ -13,19 +14,73 @@ namespace KHTimerApp
             InitializeComponent();
         }
 
-        private int _each5s = 0;
+
+        #region timers
         private void timer1s_Tick(object sender, EventArgs e)
         {
             _timer += 1;
             RefreshTime();
+        }
 
-            _each5s += 1;
-            if (_each5s%5 == 0)
+        private void timer5s_Tick(object sender, EventArgs e)
+        {
+            Sync();
+            RefreshTime();
+        }
+        #endregion
+
+        #region private
+        private void RefreshTime()
+        {
+            lblTime.ForeColor = (timerObj == null) ? Color.Red : Color.Lime;
+            lblTime.Text = string.Format("{0:d2}:{1:d2}", _timer / 60, _timer % 60);
+        }
+
+        private void Sync()
+        {
+            if (timerObj != null)
             {
-                Sync();
+                ReSync();
+            }
+            if (timerObj == null)
+            {
+                timerObj = TimerLib.Seek();
+                if (null != timerObj)
+                {
+                    ReSync();
+                }
+            }
+            btnStart.Text = timer1s.Enabled ? "STOP" : "START";
+        }
+
+        private void ReSync()
+        {
+            if (!timerObj.IsOpen)
+            {
+                timerObj = null;
+                this.Text = "KHTimer: ?";
+            }
+            else
+            {
+                this.Text = "KHTimer: " + timerObj.Name;
+                var _time = timerObj.Time();
+                _timer = _time.Item2;
+                RefreshTime();
+                switch (_time.Item1)
+                {
+                    case "run":
+                        timer1s.Start();
+                        break;
+                    case "stop":
+                        timer1s.Stop();
+                        break;
+                }
             }
         }
 
+        #endregion
+
+        #region UI Handlers
         private void btnStart_Click(object sender, EventArgs e)
         {
             if (timer1s.Enabled)
@@ -50,11 +105,6 @@ namespace KHTimerApp
             btnStart.Text = timer1s.Enabled ? "STOP" : "START";
         }
 
-        private void RefreshTime()
-        {
-            lblTime.Text = string.Format("{0:d2}:{1:d2}", _timer/60, _timer%60);
-        }
-
         private void TimerForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             var res = MessageBox.Show("Do you really want to CLOSE this application?", "Warning",
@@ -71,26 +121,6 @@ namespace KHTimerApp
             timerObj = TimerLib.Seek();
             Sync();
         }
-
-        private void Sync()
-        {
-            if (timerObj != null)
-            {
-                this.Text = "KHTimer: " + timerObj.Name;
-                var _time = timerObj.Time();
-                _timer = _time.Item2;
-                RefreshTime();
-                switch (_time.Item1)
-                {
-                    case "run":
-                        timer1s.Start();
-                        break;
-                    case "stop":
-                        timer1s.Stop();
-                        break;
-                }
-            }
-            btnStart.Text = timer1s.Enabled ? "STOP" : "START";
-        }
+        #endregion
     }
 }

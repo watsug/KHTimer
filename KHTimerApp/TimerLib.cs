@@ -20,6 +20,14 @@ namespace KHTimerApp
             _portName = name;
         }
 
+        public bool IsOpen 
+        {
+            get
+            {
+                return _port.IsOpen;
+            }
+        }
+
         public void Start()
         {
             string res = Call("start");
@@ -96,7 +104,7 @@ namespace KHTimerApp
         {
             try
             {
-                IsOpen();
+                TryOpen();
                 _port.WriteLine("::" + cmd + ";");
                 string _line = _port.ReadLine();
                 _line = _line.TrimEnd(new char[] {';', '\n', '\r'});
@@ -122,7 +130,7 @@ namespace KHTimerApp
             }
         }
 
-        private void IsOpen()
+        private void TryOpen()
         {
             try
             {
