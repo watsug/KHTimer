@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using NLog;
 
 namespace KHTimerApp
 {
     public partial class TimerForm : Form
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
         private int _timer;
         private TimerLib timerObj = null;
 
@@ -18,14 +20,28 @@ namespace KHTimerApp
         #region timers
         private void timer1s_Tick(object sender, EventArgs e)
         {
-            _timer += 1;
-            RefreshTime();
+            try
+            {
+                _timer += 1;
+                RefreshTime();
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "timer1s_Tick()");                
+            }
         }
 
         private void timer5s_Tick(object sender, EventArgs e)
         {
-            Sync();
-            RefreshTime();
+            try
+            {
+                Sync();
+                RefreshTime();
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "timer5s_Tick()");
+            }
         }
         #endregion
 
@@ -38,43 +54,59 @@ namespace KHTimerApp
 
         private void Sync()
         {
-            if (timerObj != null)
+            try
             {
-                ReSync();
-            }
-            if (timerObj == null)
-            {
-                timerObj = TimerLib.Seek();
-                if (null != timerObj)
+                if (timerObj != null)
                 {
                     ReSync();
                 }
+                if (timerObj == null)
+                {
+                    timerObj = TimerLib.Seek();
+                    if (null != timerObj)
+                    {
+                        ReSync();
+                    }
+                }
+                btnStart.Text = timer1s.Enabled ? "STOP" : "START";
             }
-            btnStart.Text = timer1s.Enabled ? "STOP" : "START";
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Cannot sync with the timer!");
+                throw;
+            }
         }
 
         private void ReSync()
         {
-            if (!timerObj.IsOpen)
+            try
             {
-                timerObj = null;
-                this.Text = "KHTimer: ?";
-            }
-            else
-            {
-                this.Text = "KHTimer: " + timerObj.Name;
-                var _time = timerObj.Time();
-                _timer = _time.Item2;
-                RefreshTime();
-                switch (_time.Item1)
+                if (!timerObj.IsOpen)
                 {
-                    case "run":
-                        timer1s.Start();
-                        break;
-                    case "stop":
-                        timer1s.Stop();
-                        break;
+                    timerObj = null;
+                    this.Text = "KHTimer: ?";
                 }
+                else
+                {
+                    this.Text = "KHTimer: " + timerObj.Name;
+                    var _time = timerObj.Time();
+                    _timer = _time.Item2;
+                    RefreshTime();
+                    switch (_time.Item1)
+                    {
+                        case "run":
+                            timer1s.Start();
+                            break;
+                        case "stop":
+                            timer1s.Stop();
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Cannot re-sync with the timer!");
+                throw;
             }
         }
 
@@ -83,44 +115,84 @@ namespace KHTimerApp
         #region UI Handlers
         private void btnStart_Click(object sender, EventArgs e)
         {
-            if (timer1s.Enabled)
+            try
             {
-                timer1s.Stop();
-                if (null != timerObj) timerObj.Stop();
+                logger.Info("btnStart_Click()");
+                if (timer1s.Enabled)
+                {
+                    timer1s.Stop();
+                    if (null != timerObj) timerObj.Stop();
+                }
+                else
+                {
+                    timer1s.Start();
+                    if (null != timerObj) timerObj.Start();
+                }
+                btnStart.Text = timer1s.Enabled ? "STOP" : "START";
             }
-            else
+            catch (Exception ex)
             {
-                timer1s.Start();
-                if (null != timerObj) timerObj.Start();
+                logger.Error(ex, "btnStart_Click()");
             }
-            btnStart.Text = timer1s.Enabled ? "STOP" : "START";
         }
 
         private void btnReset_Click(object sender, EventArgs e)
         {
-            _timer = 0;
-            RefreshTime();
-            timer1s.Start();
-            if (null != timerObj) timerObj.Reset();
-            btnStart.Text = timer1s.Enabled ? "STOP" : "START";
+            try
+            {
+                logger.Info("btnReset_Click()");
+                _timer = 0;
+                RefreshTime();
+                timer1s.Start();
+                if (null != timerObj) timerObj.Reset();
+                btnStart.Text = timer1s.Enabled ? "STOP" : "START";
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "btnStart_Click()");
+            }
         }
 
         private void TimerForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            var res = MessageBox.Show("Do you really want to CLOSE this application?", "Warning",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning);
-            if (res != DialogResult.Yes)
+            try
             {
-                e.Cancel = true;
+                logger.Info("TimerForm_FormClosing()");
+                var res = MessageBox.Show("Do you really want to CLOSE this application?", "Warning",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+                if (res != DialogResult.Yes)
+                {
+                    e.Cancel = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "TimerForm_FormClosing()");
             }
         }
 
         private void TimerForm_Load(object sender, EventArgs e)
         {
-            timerObj = TimerLib.Seek();
-            Sync();
+            try
+            {
+                timerObj = TimerLib.Seek();
+                Sync();
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "TimerForm_Load()");
+            }
         }
         #endregion
+
+        private void lblTime_DoubleClick(object sender, EventArgs e)
+        {
+            //SetTimeForm setTime = new SetTimeForm();
+            //if (setTime.ShowDialog(this) == DialogResult.OK)
+            //{
+            //    // Set time
+            //}
+        }
     }
 }

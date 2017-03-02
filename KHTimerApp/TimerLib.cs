@@ -2,11 +2,13 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.IO.Ports;
+using NLog;
 
 namespace KHTimerApp
 {
     internal class TimerLib : IDisposable
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
         private const string Separator = ":";
         private const int TIME_OUT = 1000;
 
@@ -30,20 +32,17 @@ namespace KHTimerApp
 
         public void Start()
         {
-            string res = Call("start");
-            Debug.WriteLine("start: " + res);
+            Call("start");
         }
 
         public void Stop()
         {
-            string res = Call("stop");
-            Debug.WriteLine("stop: " + res);
+            Call("stop");
         }
 
         public void Reset()
         {
-            string res = Call("reset");
-            Debug.WriteLine("reset: " + res);
+            Call("reset");
         }
 
         public Tuple<string, int> Time()
@@ -51,7 +50,6 @@ namespace KHTimerApp
             try
             {
                 string res = Call("time");
-                Debug.WriteLine("reset: " + res);
 
                 string[] vals = res.Split(':');
 
@@ -63,8 +61,9 @@ namespace KHTimerApp
 
                 return new Tuple<string, int>(vals[0], (_mins*60) + _secs);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                logger.Error(ex, "Not able to get the time from external device!");
                 return new Tuple<string, int>("stop", 0);
             }
         }
@@ -92,7 +91,7 @@ namespace KHTimerApp
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine("[Exception] " + ex.Message);
+                    logger.Error(ex, "Not able to communicate the timer using port: {0}", port);
                 }
             }
             return null;
@@ -121,11 +120,12 @@ namespace KHTimerApp
                 _off = _line.IndexOf(Separator);
                 _line = _line.Substring(_off + 1);
 
+                logger.Debug(cmd + ": " + _line);
                 return _line;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("[Exception] " + ex.Message);
+                logger.Error(ex, "Not able to call this command: {0} on the device: {1}", cmd, _portName);
                 return "";
             }
         }
@@ -141,7 +141,7 @@ namespace KHTimerApp
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("[Exception] " + ex.Message);
+                logger.Error(ex, "Error opening COM port: {0}", _portName);
             }
         }
         #endregion
@@ -151,14 +151,17 @@ namespace KHTimerApp
         {
             try
             {
-                if (null != _port && _port.IsOpen)
+                if (null != _port)
                 {
-                    _port.Close();
+                    if (_port.IsOpen) _port.Close();
+                    _port.Dispose();
+                    _port = null;
                 }
+
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("[Exception] " + ex.Message);
+                logger.Error(ex, "Cannot dispose the device on port: {0}", _portName);
             }
         }
         #endregion

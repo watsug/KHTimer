@@ -69,13 +69,14 @@
             // lblTime
             // 
             this.lblTime.Font = new System.Drawing.Font("Lucida Console", 48F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.lblTime.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
+            this.lblTime.ForeColor = System.Drawing.Color.LimeGreen;
             this.lblTime.Location = new System.Drawing.Point(46, 18);
             this.lblTime.Name = "lblTime";
             this.lblTime.Size = new System.Drawing.Size(247, 58);
             this.lblTime.TabIndex = 3;
             this.lblTime.Text = "00:00";
             this.lblTime.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblTime.DoubleClick += new System.EventHandler(this.lblTime_DoubleClick);
             // 
             // timer5s
             // 
