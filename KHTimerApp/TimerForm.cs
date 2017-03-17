@@ -188,11 +188,11 @@ namespace KHTimerApp
 
         private void lblTime_DoubleClick(object sender, EventArgs e)
         {
-            //SetTimeForm setTime = new SetTimeForm();
-            //if (setTime.ShowDialog(this) == DialogResult.OK)
-            //{
-            //    // Set time
-            //}
+            SetTimeForm setTime = new SetTimeForm();
+            if (setTime.ShowDialog(this) == DialogResult.OK)
+            {
+                // Set time
+            }
         }
     }
 }
