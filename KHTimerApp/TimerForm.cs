@@ -8,7 +8,7 @@ namespace KHTimerApp
     public partial class TimerForm : Form
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
-        private int _timer;
+        private volatile int _timer;
         private TimerLib timerObj = null;
 
         public TimerForm()
@@ -188,10 +188,30 @@ namespace KHTimerApp
 
         private void lblTime_DoubleClick(object sender, EventArgs e)
         {
-            SetTimeForm setTime = new SetTimeForm();
-            if (setTime.ShowDialog(this) == DialogResult.OK)
+            try
             {
-                // Set time
+                using (SetTimeForm setTime = new SetTimeForm())
+                {
+                    if (setTime.ShowDialog(this) == DialogResult.OK)
+                    {
+                        string _tmp = setTime.Time;
+                        if (_tmp.Length == 5)
+                        {
+                            int _minutes =
+                                int.Parse(_tmp.Substring(0, 2), System.Globalization.NumberStyles.Number);
+                            int _seconds =
+                                int.Parse(_tmp.Substring(3, 2), System.Globalization.NumberStyles.Number);
+
+                            _timer = (_minutes * 60) + _seconds;
+                            if (null != timerObj) timerObj.Set(_timer);
+                            RefreshTime();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "lblTime_DoubleClick()");
             }
         }
     }

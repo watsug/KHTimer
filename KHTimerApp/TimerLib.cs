@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Drawing;
 using System.IO.Ports;
 using NLog;
 
@@ -43,6 +41,12 @@ namespace KHTimerApp
         public void Reset()
         {
             Call("reset");
+        }
+
+        public void Set(int time)
+        {
+            string _tmp = string.Format("{0:d2}{1:d2}", time / 60, time % 60);
+            Call("set:" + _tmp);
         }
 
         public Tuple<string, int> Time()
